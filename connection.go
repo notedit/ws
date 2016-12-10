@@ -42,6 +42,8 @@ type Conn struct {
 	recv           chan recvMsg
 	sendCloseOnce  sync.Once
 	sendCloseError error
+	// this conn can hold some data
+	data map[string]string
 }
 
 func NewConn(id string, w http.ResponseWriter, req *http.Request) (*Conn, error) {
@@ -144,4 +146,12 @@ func (c *Conn) sendClose() error {
 		}
 	})
 	return c.sendCloseError
+}
+
+func (c *Conn) Set(key string, value string) {
+	c.data[key] = value
+}
+
+func (c *Conn) Get(key string) string {
+	return c.data[key]
 }
