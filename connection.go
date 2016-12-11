@@ -44,21 +44,24 @@ type Conn struct {
 	sendCloseError error
 	// this conn can hold some data
 	data map[string]string
+    hub            *Hub
 }
 
-func NewConn(id string, w http.ResponseWriter, req *http.Request) (*Conn, error) {
+func NewConn(id string, hub *Hub, w http.ResponseWriter, req *http.Request) (*Conn, error) {
 	conn, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
 		return nil, err
 	}
-	return newConn(conn), nil
+	return newConn(conn, hub), nil
 }
 
-func newConn(conn *websocket.Conn) *Conn {
+func newConn(conn *websocket.Conn, hub *Hub) *Conn {
 	c := &Conn{
 		conn: conn,
 		send: make(chan sendReq, 10),
 		recv: make(chan recvMsg, 10),
+        data: make(map[string]string),
+        hub:  hub,
 	}
 	go c.goSend()
 	go c.goRecv()
@@ -154,4 +157,8 @@ func (c *Conn) Set(key string, value string) {
 
 func (c *Conn) Get(key string) string {
 	return c.data[key]
+}
+
+func (c *Conn) Hub() *Hub {
+    return c.hub
 }
