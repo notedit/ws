@@ -69,7 +69,6 @@ func newConn(conn *websocket.Conn, hub *Hub) *Conn {
 }
 
 func (c *Conn) Close() error {
-	close(c.send)
 
 	err := c.sendClose()
 	timer := time.NewTimer(CloseRecvTimeout)
@@ -100,7 +99,7 @@ func (c *Conn) Send(msg interface{}) error {
 }
 
 func (c *Conn) goSend() {
-	for req := range c.send {
+    for req := range c.send {
 		dl := time.Now().Add(SendTimeout)
 		c.conn.SetWriteDeadline(dl)
 		err := c.conn.WriteJSON(req.msg)
